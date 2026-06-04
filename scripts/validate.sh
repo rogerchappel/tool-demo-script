@@ -16,7 +16,7 @@ done
 [ -d "fixtures/fixture-cli" ] || { echo "FAIL: fixtures missing"; exit 1; }
 
 # 4. Run tests
-node --test test/
+node --test test/*.test.js
 
 # 5. Run smoke
 bin/tool-demo-script.js demo --repo fixtures/fixture-cli --out _demo_out.md
