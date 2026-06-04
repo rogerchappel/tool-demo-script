@@ -1,0 +1,21 @@
+{
+  "name": "@rogerchappel/tool-demo-script",
+  "version": "1.0.0",
+  "description": "Create runnable demo scripts and narration from a CLI repo, then verify the commands still work.",
+  "main": "src/index.js",
+  "bin": {
+    "tool-demo-script": "bin/tool-demo-script.js"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "check": "node --check src/*.js",
+    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --demo-out fixtures/demo-md"
+  },
+  "keywords": ["cli", "demo", "verification", "agent-skill", "testing", "readme"],
+  "author": "Roger Chappel",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  }
+}
