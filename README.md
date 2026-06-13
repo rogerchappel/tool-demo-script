@@ -48,8 +48,20 @@ verify options:
 
 Examples:
   tool-demo-script demo --repo ./my-cli --out demo.md
-  tool-demo-script verify --repo ./my-cli demo.md
+  tool-demo-script verify demo.md --repo ./my-cli
 ```
+
+## Runnable Demo
+
+Generate and verify a demo from the committed fixture CLI:
+
+```bash
+bash demo/run-fixture-demo.sh
+```
+
+The script writes demo Markdown, narration metadata, and a verification log to a
+temporary directory. See `docs/tutorials/generate-and-verify-fixture-demo.md` for
+the full recipe.
 
 ## Confidence Report
 
