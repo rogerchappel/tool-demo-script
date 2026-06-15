@@ -11,11 +11,33 @@
     "check": "node --check src/*.js",
     "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --demo-out fixtures/demo-md"
   },
-  "keywords": ["cli", "demo", "verification", "agent-skill", "testing", "readme"],
+  "keywords": [
+    "cli",
+    "demo",
+    "verification",
+    "agent-skill",
+    "testing",
+    "readme"
+  ],
   "author": "Roger Chappel",
   "license": "MIT",
   "type": "commonjs",
   "engines": {
     "node": ">=18"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/tool-demo-script.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/tool-demo-script/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/tool-demo-script#readme",
+  "files": [
+    "src",
+    "bin",
+    "fixtures",
+    "docs",
+    "README.md"
+  ]
 }
