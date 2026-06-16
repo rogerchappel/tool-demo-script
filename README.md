@@ -57,11 +57,24 @@ Generate and verify a demo from the committed fixture CLI:
 
 ```bash
 bash demo/run-fixture-demo.sh
+npm run release:check
 ```
 
 The script writes demo Markdown, narration metadata, and a verification log to a
 temporary directory. See `docs/tutorials/generate-and-verify-fixture-demo.md` for
 the full recipe.
+
+## Release Verification
+
+```bash
+npm run package:smoke
+npm run release:check
+```
+
+`package:smoke` runs `npm pack --dry-run` and confirms the package includes the
+CLI, source modules, fixture CLI, release docs, and README. `release:check`
+combines syntax checks, tests, fixture demo generation, and package smoke for
+the same verification path locally and in CI.
 
 ## Confidence Report
 

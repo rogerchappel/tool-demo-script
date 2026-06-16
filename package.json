@@ -9,7 +9,9 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node --check src/*.js",
-    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --demo-out fixtures/demo-md"
+    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --demo-out fixtures/demo-md",
+    "package:smoke": "node scripts/package-smoke.js",
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
     "cli",
@@ -38,6 +40,7 @@
     "bin",
     "fixtures",
     "docs",
+    "scripts",
     "README.md"
   ]
 }
