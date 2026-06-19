@@ -19,6 +19,12 @@ const demo = generate('./my-cli');
 console.log(demo.scriptMarkdown);
 ```
 
+Run the checked-in fixture demo:
+
+```bash
+bash demo/run-fixture-demo.sh
+```
+
 ## What It Does
 
 - Detects the CLI entrypoint and available commands from `package.json` and scripts
@@ -48,7 +54,7 @@ verify options:
 
 Examples:
   tool-demo-script demo --repo ./my-cli --out demo.md
-  tool-demo-script verify --repo ./my-cli demo.md
+  tool-demo-script verify demo.md --repo ./my-cli
 ```
 
 ## Confidence Report
@@ -67,6 +73,11 @@ Examples:
 - Node.js CLI repos only (package.json based)
 - Verification runs commands locally; use `--allow-unsafe` with caution
 - Does not modify the target repo
+
+## Demo Assets
+
+- `docs/tutorials/fixture-cli-demo.md` shows the fixture CLI demo flow.
+- `docs/promo/fixture-demo-brief.md` provides a short video/social brief.
 
 ## Safety Notes
 
