@@ -2,6 +2,8 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+const { spawnSync } = require('child_process');
 const { detectEntryPoint } = require('../src/detector');
 const { generateDemoScript, generateNarration, generateConfidenceReport } = require('../src/generator');
 const { runSmoke } = require('../src/smoke');
@@ -71,6 +73,22 @@ describe('end-to-end generate', () => {
     assert.ok(result.confidence);
     assert.ok(result.entryPoint);
     assert.strictEqual(result.entryPoint.hasPackageJson, true);
+  });
+});
+
+describe('cli demo command', () => {
+  it('writes the requested --out file', () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-'));
+    const outFile = path.join(outDir, 'demo.md');
+    const cli = path.join(__dirname, '..', 'bin', 'tool-demo-script.js');
+
+    const result = spawnSync(process.execPath, [cli, 'demo', '--repo', FIXTURE_PATH, '--out', outFile], {
+      encoding: 'utf8',
+    });
+
+    assert.strictEqual(result.status, 0, result.stderr);
+    assert.match(fs.readFileSync(outFile, 'utf8'), /^# Demo: fixture-cli/m);
+    assert.match(result.stderr, /Demo script/);
   });
 });
 

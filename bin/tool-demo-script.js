@@ -51,19 +51,18 @@ Examples:
     }
 
     const result = generate(repoPath);
-    console.log(result.scriptMarkdown);
+    if (outFile) {
+      fs.writeFileSync(outFile, result.scriptMarkdown, 'utf8');
+      console.error(`Demo script → ${outFile}`);
+    } else {
+      console.log(result.scriptMarkdown);
+    }
 
     if (showNarration) {
       console.log('\n--- Narration ---');
       console.log(JSON.stringify(result.narration, null, 2));
       console.log('\n--- Confidence ---');
       console.log(JSON.stringify(result.confidence, null, 2));
-    }
-
-    if (!outFile) {
-      const demoPath = path.join(repoPath, 'demo-script.md');
-      fs.writeFileSync(demoPath, result.scriptMarkdown, 'utf8');
-      console.error(`Demo script → ${demoPath}`);
     }
 
     process.exit(0);
