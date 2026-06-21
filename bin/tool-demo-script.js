@@ -51,6 +51,7 @@ Examples:
     }
 
     const result = generate(repoPath);
+
     if (outFile) {
       fs.writeFileSync(outFile, result.scriptMarkdown, 'utf8');
       console.error(`Demo script → ${outFile}`);

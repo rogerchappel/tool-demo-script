@@ -9,13 +9,38 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node --check src/*.js",
-    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --out /tmp/tool-demo-script-fixture-demo.md && bin/tool-demo-script.js verify /tmp/tool-demo-script-fixture-demo.md --repo fixtures/fixture-cli"
+    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --out /tmp/tool-demo-script-fixture-demo.md && bin/tool-demo-script.js verify /tmp/tool-demo-script-fixture-demo.md --repo fixtures/fixture-cli",
+    "package:smoke": "node scripts/package-smoke.js",
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
-  "keywords": ["cli", "demo", "verification", "agent-skill", "testing", "readme"],
+  "keywords": [
+    "cli",
+    "demo",
+    "verification",
+    "agent-skill",
+    "testing",
+    "readme"
+  ],
   "author": "Roger Chappel",
   "license": "MIT",
   "type": "commonjs",
   "engines": {
     "node": ">=18"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/tool-demo-script.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/tool-demo-script/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/tool-demo-script#readme",
+  "files": [
+    "src",
+    "bin",
+    "fixtures",
+    "docs",
+    "scripts",
+    "README.md"
+  ]
 }
