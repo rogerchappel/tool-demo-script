@@ -9,7 +9,7 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node --check src/*.js",
-    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --demo-out fixtures/demo-md",
+    "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --out /tmp/tool-demo-script-fixture-demo.md && bin/tool-demo-script.js verify /tmp/tool-demo-script-fixture-demo.md --repo fixtures/fixture-cli",
     "package:smoke": "node scripts/package-smoke.js",
     "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },

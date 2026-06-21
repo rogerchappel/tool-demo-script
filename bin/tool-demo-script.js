@@ -66,12 +66,6 @@ Examples:
       console.log(JSON.stringify(result.confidence, null, 2));
     }
 
-    if (!outFile) {
-      const demoPath = path.join(repoPath, 'demo-script.md');
-      fs.writeFileSync(demoPath, result.scriptMarkdown, 'utf8');
-      console.error(`Demo script → ${demoPath}`);
-    }
-
     process.exit(0);
   }
 
