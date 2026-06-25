@@ -14,7 +14,11 @@ const required = [
   'src/smoke.js',
   'fixtures/fixture-cli/package.json',
   'docs/RELEASE_CANDIDATE.md',
-  'README.md'
+  'README.md',
+  'LICENSE',
+  'SECURITY.md',
+  'CONTRIBUTING.md',
+  'CHANGELOG.md'
 ];
 
 const missing = required.filter((entry) => !output.includes(entry));
