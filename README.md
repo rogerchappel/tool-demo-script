@@ -82,6 +82,11 @@ CLI, source modules, fixture CLI, release docs, and README. `release:check`
 combines syntax checks, tests, fixture demo generation, and package smoke for
 the same verification path locally and in CI.
 
+The npm package ships the CLI, source modules, fixture CLI, release docs,
+README, MIT license, security policy, contribution guide, and changelog. The
+package smoke check fails if any of those release-facing files are missing from
+the dry-run tarball.
+
 ## Confidence Report
 
 | Check | What it verifies |
@@ -110,3 +115,6 @@ the same verification path locally and in CI.
 - Verification runs commands in the repo directory with a 5s timeout
 - npm install commands are excluded from verification
 - Safe command allowlist: `--version`, `-V`, `--help`, `-h`, `version`, `help`, `info`, `list`, `ls`
+
+See [SECURITY.md](SECURITY.md) before verifying demos from untrusted
+repositories or enabling `--allow-unsafe`.
