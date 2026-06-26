@@ -14,7 +14,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.js",
     "check": "node --check src/*.js",
     "smoke": "bin/tool-demo-script.js demo --repo fixtures/fixture-cli --demo-out fixtures/demo-md"
   },
