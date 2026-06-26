@@ -68,6 +68,15 @@ Examples:
 - Verification runs commands locally; use `--allow-unsafe` with caution
 - Does not modify the target repo
 
+## Verify
+
+```bash
+npm test
+npm run check
+npm run smoke
+npm pack --dry-run
+```
+
 ## Safety Notes
 
 - Demo detection is read-only
