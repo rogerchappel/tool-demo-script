@@ -70,6 +70,14 @@ The script writes demo Markdown, narration metadata, and a verification log to a
 temporary directory. See `docs/tutorials/generate-and-verify-fixture-demo.md` for
 the full recipe.
 
+To focus on the file-backed confidence report for the same fixture:
+
+```bash
+bash demo/fixture-confidence-report.sh
+```
+
+See `docs/tutorials/fixture-confidence-report.md` for the walkthrough.
+
 ## Release Verification
 
 ```bash
@@ -107,7 +115,9 @@ the dry-run tarball.
 ## Demo Assets
 
 - `docs/tutorials/fixture-cli-demo.md` shows the fixture CLI demo flow.
+- `docs/tutorials/fixture-confidence-report.md` shows the confidence report flow.
 - `docs/promo/fixture-demo-brief.md` provides a short video/social brief.
+- `docs/promo/confidence-report-social-hooks.md` provides short post hooks.
 
 ## Safety Notes
 
