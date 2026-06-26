@@ -19,6 +19,12 @@ const demo = generate('./my-cli');
 console.log(demo.scriptMarkdown);
 ```
 
+Run the checked-in fixture demo:
+
+```bash
+bash demo/run-fixture-demo.sh
+```
+
 ## What It Does
 
 - Detects the CLI entrypoint and available commands from `package.json` and scripts
@@ -48,8 +54,46 @@ verify options:
 
 Examples:
   tool-demo-script demo --repo ./my-cli --out demo.md
-  tool-demo-script verify --repo ./my-cli demo.md
+  tool-demo-script verify demo.md --repo ./my-cli
 ```
+
+## Runnable Demo
+
+Generate and verify a demo from the committed fixture CLI:
+
+```bash
+bash demo/run-fixture-demo.sh
+npm run release:check
+```
+
+The script writes demo Markdown, narration metadata, and a verification log to a
+temporary directory. See `docs/tutorials/generate-and-verify-fixture-demo.md` for
+the full recipe.
+
+To focus on the file-backed confidence report for the same fixture:
+
+```bash
+bash demo/fixture-confidence-report.sh
+```
+
+See `docs/tutorials/fixture-confidence-report.md` for the walkthrough.
+
+## Release Verification
+
+```bash
+npm run package:smoke
+npm run release:check
+```
+
+`package:smoke` runs `npm pack --dry-run` and confirms the package includes the
+CLI, source modules, fixture CLI, release docs, and README. `release:check`
+combines syntax checks, tests, fixture demo generation, and package smoke for
+the same verification path locally and in CI.
+
+The npm package ships the CLI, source modules, fixture CLI, release docs,
+README, MIT license, security policy, contribution guide, and changelog. The
+package smoke check fails if any of those release-facing files are missing from
+the dry-run tarball.
 
 ## Confidence Report
 
@@ -77,9 +121,19 @@ npm run smoke
 npm pack --dry-run
 ```
 
+## Demo Assets
+
+- `docs/tutorials/fixture-cli-demo.md` shows the fixture CLI demo flow.
+- `docs/tutorials/fixture-confidence-report.md` shows the confidence report flow.
+- `docs/promo/fixture-demo-brief.md` provides a short video/social brief.
+- `docs/promo/confidence-report-social-hooks.md` provides short post hooks.
+
 ## Safety Notes
 
 - Demo detection is read-only
 - Verification runs commands in the repo directory with a 5s timeout
 - npm install commands are excluded from verification
 - Safe command allowlist: `--version`, `-V`, `--help`, `-h`, `version`, `help`, `info`, `list`, `ls`
+
+See [SECURITY.md](SECURITY.md) before verifying demos from untrusted
+repositories or enabling `--allow-unsafe`.
