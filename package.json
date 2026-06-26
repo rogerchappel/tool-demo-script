@@ -6,6 +6,18 @@
   "bin": {
     "tool-demo-script": "bin/tool-demo-script.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "fixtures",
+    "docs",
+    "scripts",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node --check src/*.js",
@@ -23,10 +35,6 @@
   ],
   "author": "Roger Chappel",
   "license": "MIT",
-  "type": "commonjs",
-  "engines": {
-    "node": ">=18"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rogerchappel/tool-demo-script.git"
@@ -35,16 +43,8 @@
     "url": "https://github.com/rogerchappel/tool-demo-script/issues"
   },
   "homepage": "https://github.com/rogerchappel/tool-demo-script#readme",
-  "files": [
-    "src",
-    "bin",
-    "fixtures",
-    "docs",
-    "scripts",
-    "README.md",
-    "LICENSE",
-    "SECURITY.md",
-    "CONTRIBUTING.md",
-    "CHANGELOG.md"
-  ]
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  }
 }
