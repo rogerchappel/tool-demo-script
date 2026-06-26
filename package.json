@@ -6,6 +6,13 @@
   "bin": {
     "tool-demo-script": "bin/tool-demo-script.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "fixtures",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node --test test/",
     "check": "node --check src/*.js",
@@ -14,6 +21,14 @@
   "keywords": ["cli", "demo", "verification", "agent-skill", "testing", "readme"],
   "author": "Roger Chappel",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/tool-demo-script.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/tool-demo-script/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/tool-demo-script#readme",
   "type": "commonjs",
   "engines": {
     "node": ">=18"
