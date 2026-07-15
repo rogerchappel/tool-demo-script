@@ -25,6 +25,13 @@ Run the checked-in fixture demo:
 bash demo/run-fixture-demo.sh
 ```
 
+Generate a reviewer-friendly promo packet with demo Markdown, narration,
+confidence data, and verification output:
+
+```bash
+bash demo/promo-review-packet.sh
+```
+
 ## What It Does
 
 - Detects the CLI entrypoint and available commands from `package.json` and scripts
@@ -125,6 +132,8 @@ npm pack --dry-run
 
 - `docs/tutorials/fixture-cli-demo.md` shows the fixture CLI demo flow.
 - `docs/tutorials/fixture-confidence-report.md` shows the confidence report flow.
+- `docs/tutorials/promo-review-packet.md` shows the one-folder review packet for
+  demo recording or README updates.
 - `docs/promo/fixture-demo-brief.md` provides a short video/social brief.
 - `docs/promo/confidence-report-social-hooks.md` provides short post hooks.
 
