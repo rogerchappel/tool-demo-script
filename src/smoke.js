@@ -14,7 +14,9 @@ async function runSmoke(repoPath, demoContent, options = {}) {
 
   for (const raw of commands) {
     const cmd = raw.replace(/^node\s+|^\.\//, '').trim();
-    const isSafe = SAFE_COMMANDS.some(s => cmd.includes(s));
+    const tokens = cmd.split(/\s+/);
+    const hasShellSyntax = /[;&|`$<>\n\r]/.test(raw);
+    const isSafe = !hasShellSyntax && tokens.some(token => SAFE_COMMANDS.includes(token));
 
     if (!isSafe && !options.allowUnsafe) {
       results.skipped++;

@@ -101,4 +101,19 @@ describe('smoke verification', async () => {
     // Should have at least one passed
     assert.ok(report.passed >= 1, `Expected at least 1 passed, got ${report.passed}`);
   });
+
+  it('does not treat safe-looking substrings or shell syntax as allowlisted', async () => {
+    const demo = [
+      '```bash',
+      'fixture-cli --helpful',
+      'fixture-cli --help; echo unsafe',
+      '```',
+    ].join('\n');
+
+    const report = await runSmoke(FIXTURE_PATH, demo);
+
+    assert.strictEqual(report.skipped, 2);
+    assert.strictEqual(report.passed, 0);
+    assert.ok(report.details.every((detail) => detail.status === 'skipped'));
+  });
 });
