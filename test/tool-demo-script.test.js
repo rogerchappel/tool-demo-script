@@ -10,6 +10,8 @@ const { runSmoke } = require('../src/smoke');
 const { generate, verify } = require('../src/index');
 
 const FIXTURE_PATH = path.join(__dirname, '..', 'fixtures', 'fixture-cli');
+const CLI_PATH = path.join(__dirname, '..', 'bin', 'tool-demo-script.js');
+const README_PATH = path.join(__dirname, '..', 'README.md');
 
 describe('detector', () => {
   it('finds package.json and bin entry', () => {
@@ -87,6 +89,29 @@ describe('end-to-end generate', () => {
       '--out',
       outFile
     ], { encoding: 'utf8' });
+
+    const demo = fs.readFileSync(outFile, 'utf8');
+    assert.match(demo, /# Demo: fixture-cli/);
+  });
+
+  it('executes the documented Quickstart demo command against the fixture', () => {
+    const readme = fs.readFileSync(README_PATH, 'utf8');
+    const quickstart = readme.match(/## Quickstart\n\n```bash\n([\s\S]*?)```/);
+    assert.ok(quickstart, 'README Quickstart shell block is missing');
+
+    const documentedCommand = quickstart[1]
+      .split('\n')
+      .find((line) => line.startsWith('tool-demo-script demo '));
+    assert.ok(documentedCommand, 'README Quickstart demo command is missing');
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-readme-test-'));
+    const outFile = path.join(tmpDir, 'demo.md');
+    const args = documentedCommand
+      .split(/\s+/)
+      .slice(1)
+      .map((arg) => arg === './my-cli' ? FIXTURE_PATH : arg === 'demo.md' ? outFile : arg);
+
+    execFileSync(process.execPath, [CLI_PATH, ...args], { encoding: 'utf8' });
 
     const demo = fs.readFileSync(outFile, 'utf8');
     assert.match(demo, /# Demo: fixture-cli/);

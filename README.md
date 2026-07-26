@@ -5,16 +5,18 @@ Create runnable demo scripts and narration from a CLI repo, then verify the comm
 ## Quickstart
 
 ```bash
-npm install -g @rogerchappel/tool-demo-script
+# The package is not currently published to npm; install it from the source repo.
+git clone https://github.com/rogerchappel/tool-demo-script.git
+npm install -g ./tool-demo-script
 
 # Generate a demo script for a CLI repo
-tool-demo-script demo ./my-cli --out demo.md
+tool-demo-script demo --repo ./my-cli --out demo.md
 
 # Verify demo commands still work
 tool-demo-script verify ./demo.md --repo ./my-cli
 
 # Library API
-const { generate, verify } = require('@rogerchappel/tool-demo-script');
+const { generate, verify } = require('./tool-demo-script');
 const demo = generate('./my-cli');
 console.log(demo.scriptMarkdown);
 ```
