@@ -38,7 +38,10 @@ bash demo/promo-review-packet.sh
 
 - Detects the CLI entrypoint and available commands from `package.json` and scripts
 - Generates a structured demo script in Markdown with install, version, and usage sections
-- Extracts example scripts from `examples/` directories
+- Extracts examples from `examples/`, `demo/`, `demos/`, and `samples/`
+  directories. Markdown examples are incorporated as Markdown so their prose and
+  existing shell fences remain intact; `.sh` examples are wrapped in a shell
+  fence.
 - Produces narration metadata (title, sections, duration, key commands)
 - Generates a confidence report scoring package health (README, LICENSE, CI, tests, examples)
 - Verifies demo commands still execute correctly via smoke testing

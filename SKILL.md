@@ -17,6 +17,8 @@ Use this skill when:
 
 1. Detects CLI entrypoint, binary commands, and package scripts via `detectEntryPoint()`
 2. Generates a structured demo Markdown with install, usage, test, and example sections
+   (`.md` examples retain their Markdown and fenced commands; `.sh` examples are
+   placed in a shell fence)
 3. Produces narration metadata (title, sections count, estimated duration, key commands)
 4. Generates a confidence report scoring 6 dimensions: package.json, README, LICENSE, CI, examples, tests
 5. Optional `verify` runs safe commands with a 5s timeout and reports pass/fail/skip
