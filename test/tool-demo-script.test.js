@@ -65,6 +65,34 @@ describe('generator', () => {
     assert.ok(report.passed >= 5);
     assert.ok(report.failed === 0);
   });
+
+  it('preserves Markdown examples without treating prose as commands', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-markdown-'));
+    const examplesDir = path.join(tmpDir, 'examples');
+    fs.mkdirSync(examplesDir);
+    fs.writeFileSync(path.join(examplesDir, 'guide.md'), [
+      '### Guided example',
+      '',
+      'Run this:',
+      '',
+      '```bash',
+      'fixture-cli --help',
+      '```',
+    ].join('\n'));
+
+    const entry = detectEntryPoint(FIXTURE_PATH);
+    const demo = generateDemoScript(tmpDir, entry);
+    const narration = generateNarration(demo);
+    const report = await runSmoke(FIXTURE_PATH, demo);
+
+    assert.match(demo, /## Demo: guide\n\n### Guided example/);
+    assert.strictEqual((demo.match(/^```bash$/gm) || []).length, 5);
+    assert.strictEqual((demo.match(/^```$/gm) || []).length, 5);
+    assert.ok(narration.keyCommands.includes('fixture-cli --help'));
+    assert.ok(!narration.keyCommands.includes('Run this:'));
+    assert.ok(report.details.some((detail) => detail.command === 'fixture-cli --help'));
+    assert.ok(!report.details.some((detail) => detail.command === 'Run this:'));
+  });
 });
 
 describe('end-to-end generate', () => {
