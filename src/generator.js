@@ -61,10 +61,14 @@ function generateDemoScript(repoPath, entry, _options = {}) {
         if (file.endsWith('.sh') || file.endsWith('.md')) {
           lines.push(`## Demo: ${path.basename(file, path.extname(file))}`);
           lines.push('');
-          lines.push('```bash');
           const content = fs.readFileSync(examplePath, 'utf8').trim();
-          lines.push(content);
-          lines.push('```');
+          if (file.endsWith('.md')) {
+            lines.push(content);
+          } else {
+            lines.push('```bash');
+            lines.push(content);
+            lines.push('```');
+          }
           lines.push('');
         }
       }
