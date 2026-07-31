@@ -90,7 +90,9 @@ describe('generator', () => {
     assert.strictEqual((demo.match(/^```$/gm) || []).length, 5);
     assert.ok(narration.keyCommands.includes('fixture-cli --help'));
     assert.ok(!narration.keyCommands.includes('Run this:'));
-    assert.ok(report.details.some((detail) => detail.command === 'fixture-cli --help'));
+    assert.strictEqual(report.failed, 0, JSON.stringify(report.details));
+    assert.ok(report.details.some((detail) =>
+      detail.command === 'fixture-cli --help' && detail.status === 'passed'));
     assert.ok(!report.details.some((detail) => detail.command === 'Run this:'));
   });
 });
@@ -147,12 +149,22 @@ describe('end-to-end generate', () => {
 });
 
 describe('smoke verification', async () => {
-  it('passes for --version command', async () => {
-    const entry = detectEntryPoint(FIXTURE_PATH);
-    const demo = generateDemoScript(FIXTURE_PATH, entry);
-    const report = await runSmoke(FIXTURE_PATH, demo, { allowUnsafe: true });
-    // Should have at least one passed
-    assert.ok(report.passed >= 1, `Expected at least 1 passed, got ${report.passed}`);
+  it('runs direct node entries and declared package bins', async () => {
+    const demo = [
+      '```bash',
+      'node index.js --version',
+      'fixture-cli --help',
+      '```',
+    ].join('\n');
+
+    const report = await runSmoke(FIXTURE_PATH, demo);
+
+    assert.strictEqual(report.failed, 0, JSON.stringify(report.details));
+    assert.strictEqual(report.passed, 2);
+    assert.deepStrictEqual(
+      report.details.map((detail) => [detail.command, detail.status]),
+      [['node index.js --version', 'passed'], ['fixture-cli --help', 'passed']],
+    );
   });
 
   it('does not treat safe-looking substrings or shell syntax as allowlisted', async () => {
