@@ -3,7 +3,7 @@
  */
 const path = require('path');
 const fs = require('fs');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 // Commands that are safe to run without side effects
 const SAFE_COMMANDS = ['--version', '-V', '--help', '-h', 'version', 'help', 'info', 'list', 'ls'];
@@ -25,8 +25,12 @@ async function runSmoke(repoPath, demoContent, options = {}) {
     }
 
     try {
-      const fullCmd = raw.startsWith('node ') ? raw : `node ${raw}`;
-      const output = execSync(fullCmd, { cwd: repoPath, encoding: 'utf8', timeout: 5000 });
+      const command = resolveCommand(repoPath, raw);
+      const output = execFileSync(command.file, command.args, {
+        cwd: repoPath,
+        encoding: 'utf8',
+        timeout: 5000,
+      });
       results.passed++;
       results.details.push({ command: raw, status: 'passed', output: output.trim().slice(0, 200) });
     } catch (err) {
@@ -36,6 +40,31 @@ async function runSmoke(repoPath, demoContent, options = {}) {
   }
 
   return results;
+}
+
+function resolveCommand(repoPath, raw) {
+  const [executable, ...args] = raw.trim().split(/\s+/);
+
+  if (executable === 'node') {
+    return { file: process.execPath, args };
+  }
+
+  const packagePath = path.join(repoPath, 'package.json');
+  if (fs.existsSync(packagePath)) {
+    const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    const bins = typeof pkg.bin === 'string'
+      ? { [pkg.name]: pkg.bin }
+      : (pkg.bin || {});
+    if (Object.prototype.hasOwnProperty.call(bins, executable)) {
+      return { file: process.execPath, args: [path.resolve(repoPath, bins[executable]), ...args] };
+    }
+  }
+
+  if (executable.startsWith('./')) {
+    return { file: process.execPath, args: [path.resolve(repoPath, executable), ...args] };
+  }
+
+  throw new Error(`Command is not a direct node invocation or a declared package bin: ${executable}`);
 }
 
 function extractBashCommands(demoContent) {
