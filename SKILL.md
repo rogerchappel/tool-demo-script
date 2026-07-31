@@ -27,6 +27,8 @@ Use this skill when:
 
 - Detection is read-only on the target repo
 - Verification **executes commands** in the repo directory — only runs safe commands by default
+- Verification resolves direct `node <entry>` commands and package-bin names from
+  the target repo's `package.json`; it does not search globally installed commands
 - Never modifies repo files or runs `npm install` during verification
 - Smoke commands timeout after 5 seconds
 
