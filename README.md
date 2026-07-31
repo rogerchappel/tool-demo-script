@@ -146,6 +146,8 @@ npm pack --dry-run
 
 - Demo detection is read-only
 - Verification runs commands in the repo directory with a 5s timeout
+- Direct `node <entry>` commands and command names declared in the target
+  package's `bin` field are resolved to their local entry files
 - npm install commands are excluded from verification
 - Safe command allowlist: `--version`, `-V`, `--help`, `-h`, `version`, `help`, `info`, `list`, `ls`
 
