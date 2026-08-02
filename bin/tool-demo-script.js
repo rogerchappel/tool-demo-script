@@ -4,7 +4,7 @@
  *
  * Usage:
  *   tool-demo-script demo --repo ./my-cli --out demo.md
- *   tool-demo-script verify demo.md --repo ./my-cli
+ *   tool-demo-script verify [options] <demo-file>
  */
 const path = require('path');
 const fs = require('fs');
@@ -19,6 +19,7 @@ async function main() {
 
 Usage:
   tool-demo-script <action> [options]
+  tool-demo-script verify [options] <demo-file>
 
 Actions:
   demo     Generate a demo script from a CLI repo
@@ -33,22 +34,30 @@ verify options:
   --repo <path>      Path to the CLI repo
   --allow-unsafe     Run commands outside the safe allowlist
 
+Options may appear before or after the verify demo file.
+
 Examples:
   tool-demo-script demo --repo ./my-cli --out demo.md
-  tool-demo-script verify --repo ./my-cli demo.md
+  tool-demo-script verify demo.md --repo ./my-cli
 `);
     process.exit(0);
   }
 
   if (action === 'demo') {
-    const repoPath = extractFlag(rest, '--repo');
-    const outFile = extractFlag(rest, '--out');
-    const showNarration = rest.includes('--narration');
+    const parsed = parseArgs(rest, {
+      values: ['--repo', '--out'],
+      booleans: ['--narration'],
+      positionals: 0,
+    });
+    const repoPath = parsed.values['--repo'];
+    const outFile = parsed.values['--out'];
+    const showNarration = parsed.booleans.has('--narration');
 
     if (!repoPath) {
       console.error('Error: --repo is required');
       process.exit(1);
     }
+    requireReadableDirectory(repoPath, 'repository');
 
     const result = generate(repoPath);
 
@@ -70,14 +79,21 @@ Examples:
   }
 
   if (action === 'verify') {
-    const demoPath = rest[0];
-    const repoPath = extractFlag(rest, '--repo');
-    const allowUnsafe = rest.includes('--allow-unsafe');
+    const parsed = parseArgs(rest, {
+      values: ['--repo'],
+      booleans: ['--allow-unsafe'],
+      positionals: 1,
+    });
+    const [demoPath] = parsed.positionals;
+    const repoPath = parsed.values['--repo'];
+    const allowUnsafe = parsed.booleans.has('--allow-unsafe');
 
     if (!demoPath || !repoPath) {
       console.error('Error: both demo file and --repo are required');
       process.exit(1);
     }
+    requireReadableFile(demoPath, 'demo file');
+    requireReadableDirectory(repoPath, 'repository');
 
     const report = await verify(demoPath, repoPath, { allowUnsafe });
     console.log(`Verified: ${report.passed} passed, ${report.failed} failed, ${report.skipped} skipped`);
@@ -95,10 +111,53 @@ Examples:
   process.exit(1);
 }
 
-function extractFlag(args, flag) {
-  const idx = args.indexOf(flag);
-  if (idx === -1 || idx + 1 >= args.length) return null;
-  return args[idx + 1];
+function parseArgs(args, grammar) {
+  const values = {};
+  const booleans = new Set();
+  const positionals = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (grammar.values.includes(arg)) {
+      const operand = args[index + 1];
+      if (!operand || operand.startsWith('-')) usageError(`${arg} requires a value`);
+      values[arg] = operand;
+      index += 1;
+    } else if (grammar.booleans.includes(arg)) {
+      booleans.add(arg);
+    } else if (arg.startsWith('-')) {
+      usageError(`unknown option: ${arg}`);
+    } else {
+      positionals.push(arg);
+    }
+  }
+
+  if (positionals.length > grammar.positionals) {
+    usageError(`unexpected argument: ${positionals[grammar.positionals]}`);
+  }
+  return { values, booleans, positionals };
 }
 
-main();
+function usageError(message) {
+  console.error(`Error: ${message}\nTry 'tool-demo-script --help' for usage.`);
+  process.exit(1);
+}
+
+function requireReadableFile(filePath, label) {
+  requireReadable(filePath, label, (stat) => stat.isFile());
+}
+
+function requireReadableDirectory(filePath, label) {
+  requireReadable(filePath, label, (stat) => stat.isDirectory());
+}
+
+function requireReadable(filePath, label, matchesType) {
+  try {
+    fs.accessSync(filePath, fs.constants.R_OK);
+    if (!matchesType(fs.statSync(filePath))) throw new Error('wrong type');
+  } catch {
+    usageError(`${label} is not readable: ${filePath}`);
+  }
+}
+
+main().catch((error) => usageError(error.message));
