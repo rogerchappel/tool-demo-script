@@ -50,6 +50,7 @@ bash demo/promo-review-packet.sh
 
 ```
 Usage: tool-demo-script <action> [options]
+       tool-demo-script verify [options] <demo-file>
 
 Actions:
   demo     Generate a demo script from a CLI repo
@@ -63,6 +64,9 @@ demo options:
 verify options:
   --repo <path>      Path to the CLI repo
   --allow-unsafe     Run commands outside the safe allowlist
+
+Options may appear before or after the verify demo file. Each action rejects
+unknown options and extra positional arguments.
 
 Examples:
   tool-demo-script demo --repo ./my-cli --out demo.md

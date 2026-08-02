@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const { detectEntryPoint } = require('../src/detector');
 const { generateDemoScript, generateNarration, generateConfidenceReport } = require('../src/generator');
 const { runSmoke } = require('../src/smoke');
@@ -145,6 +145,66 @@ describe('end-to-end generate', () => {
 
     const demo = fs.readFileSync(outFile, 'utf8');
     assert.match(demo, /# Demo: fixture-cli/);
+  });
+});
+
+describe('CLI argument parsing', () => {
+  function runCli(args) {
+    return spawnSync(process.execPath, [CLI_PATH, ...args], { encoding: 'utf8' });
+  }
+
+  function makeDemo() {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-cli-'));
+    const demoPath = path.join(tmpDir, 'demo.md');
+    fs.writeFileSync(demoPath, '```bash\nfixture-cli --help\n```\n');
+    return demoPath;
+  }
+
+  it('accepts verify options before or after the demo path', () => {
+    const demoPath = makeDemo();
+    for (const args of [
+      ['verify', '--repo', FIXTURE_PATH, demoPath],
+      ['verify', demoPath, '--repo', FIXTURE_PATH],
+    ]) {
+      const result = runCli(args);
+      assert.strictEqual(result.status, 0, result.stderr);
+      assert.match(result.stdout, /Verified: 1 passed/);
+    }
+  });
+
+  it('rejects missing option operands without a stack trace', () => {
+    for (const args of [['demo', '--repo'], ['demo', '--repo', '--out', 'demo.md'], ['verify', makeDemo(), '--repo']]) {
+      const result = runCli(args);
+      assert.strictEqual(result.status, 1);
+      assert.match(result.stderr, /requires a value/);
+      assert.doesNotMatch(result.stderr, /\n\s+at /);
+    }
+  });
+
+  it('rejects unknown options and extra positional arguments', () => {
+    for (const args of [
+      ['demo', '--repo', FIXTURE_PATH, '--bogus'],
+      ['demo', '--repo', FIXTURE_PATH, 'extra'],
+      ['verify', makeDemo(), '--repo', FIXTURE_PATH, 'extra'],
+    ]) {
+      const result = runCli(args);
+      assert.strictEqual(result.status, 1);
+      assert.match(result.stderr, /unknown option|unexpected argument/);
+    }
+  });
+
+  it('reports unreadable demo and repository inputs concisely', () => {
+    const missing = path.join(os.tmpdir(), `tool-demo-script-missing-${process.pid}`);
+    for (const args of [
+      ['verify', missing, '--repo', FIXTURE_PATH],
+      ['verify', makeDemo(), '--repo', missing],
+      ['demo', '--repo', missing],
+    ]) {
+      const result = runCli(args);
+      assert.strictEqual(result.status, 1);
+      assert.match(result.stderr, /is not readable/);
+      assert.doesNotMatch(result.stderr, /\n\s+at /);
+    }
   });
 });
 
