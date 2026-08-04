@@ -69,10 +69,10 @@ function resolveCommand(repoPath, raw) {
 
 function extractBashCommands(demoContent) {
   const commands = [];
-  const regex = /```bash\n([\s\S]*?)```/g;
+  const regex = /```bash\r?\n([\s\S]*?)```/g;
   let match;
   while ((match = regex.exec(demoContent)) !== null) {
-    const lines = match[1].split('\n')
+    const lines = match[1].split(/\r?\n/)
       .map(l => l.trim())
       .filter(l => l && !l.startsWith('#') && !l.startsWith('npm install'));
     commands.push(...lines);
