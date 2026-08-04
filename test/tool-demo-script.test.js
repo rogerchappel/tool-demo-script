@@ -227,6 +227,46 @@ describe('smoke verification', async () => {
     );
   });
 
+  it('runs direct node entries and declared package bins from CRLF fences', async () => {
+    const demo = [
+      '```bash',
+      'node index.js --version',
+      'fixture-cli --help',
+      '```',
+    ].join('\r\n');
+
+    const report = await runSmoke(FIXTURE_PATH, demo);
+
+    assert.strictEqual(report.failed, 0, JSON.stringify(report.details));
+    assert.strictEqual(report.passed, 2);
+    assert.deepStrictEqual(
+      report.details.map((detail) => [detail.command, detail.status]),
+      [['node index.js --version', 'passed'], ['fixture-cli --help', 'passed']],
+    );
+  });
+
+  it('reports CRLF fenced commands in CLI verification totals', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-crlf-'));
+    const demoPath = path.join(tmpDir, 'demo.md');
+    fs.writeFileSync(demoPath, [
+      '```bash',
+      'fixture-cli --help',
+      '```',
+    ].join('\r\n'));
+
+    const result = spawnSync(process.execPath, [
+      CLI_PATH,
+      'verify',
+      demoPath,
+      '--repo',
+      FIXTURE_PATH,
+    ], { encoding: 'utf8' });
+
+    assert.strictEqual(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Verified: 1 passed, 0 failed, 0 skipped/);
+    assert.doesNotMatch(result.stdout, /Verified: 0 passed/);
+  });
+
   it('does not treat safe-looking substrings or shell syntax as allowlisted', async () => {
     const demo = [
       '```bash',
