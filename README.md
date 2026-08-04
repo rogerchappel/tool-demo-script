@@ -46,6 +46,9 @@ bash demo/promo-review-packet.sh
 - Generates a confidence report scoring package health (README, LICENSE, CI, tests, examples)
 - Verifies demo commands still execute correctly via smoke testing
 
+Verification recognizes `bash` fenced code blocks in Markdown files that use
+either LF (Unix) or CRLF (Windows) line endings.
+
 ## CLI Usage
 
 ```
