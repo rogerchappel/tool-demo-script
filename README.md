@@ -155,6 +155,8 @@ npm pack --dry-run
 - Verification runs commands in the repo directory with a 5s timeout
 - Direct `node <entry>` commands and command names declared in the target
   package's `bin` field are resolved to their local entry files
+- Quoted paths and arguments, plus backslash-escaped spaces, are preserved when
+  commands are verified without invoking a shell
 - npm install commands are excluded from verification
 - Safe command allowlist: `--version`, `-V`, `--help`, `-h`, `version`, `help`, `info`, `list`, `ls`
 
