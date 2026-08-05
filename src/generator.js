@@ -26,7 +26,7 @@ function generateDemoScript(repoPath, entry, _options = {}) {
     lines.push('');
     lines.push('```bash');
     const firstBin = entry.binEntry || entry.entryPoint || 'index.js';
-    lines.push(`node ${firstBin} --version`);
+    lines.push(`node ${quoteShellArgument(firstBin)} --version`);
     lines.push('# => ' + entry.version);
     lines.push('```');
     lines.push('');
@@ -76,6 +76,12 @@ function generateDemoScript(repoPath, entry, _options = {}) {
   }
 
   return lines.join('\n');
+}
+
+function quoteShellArgument(value) {
+  const argument = String(value);
+  if (/^[A-Za-z0-9_./:@%+=,-]+$/.test(argument)) return argument;
+  return `'${argument.replace(/'/g, `'"'"'`)}'`;
 }
 
 function generateNarration(demoScript) {
