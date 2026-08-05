@@ -13,8 +13,14 @@ async function runSmoke(repoPath, demoContent, options = {}) {
   const commands = extractBashCommands(demoContent);
 
   for (const raw of commands) {
-    const cmd = raw.replace(/^node\s+|^\.\//, '').trim();
-    const tokens = cmd.split(/\s+/);
+    let tokens;
+    try {
+      tokens = parseCommandLine(raw);
+    } catch (err) {
+      results.skipped++;
+      results.details.push({ command: raw, status: 'skipped', reason: err.message });
+      continue;
+    }
     const hasShellSyntax = /[;&|`$<>\n\r]/.test(raw);
     const isSafe = !hasShellSyntax && tokens.some(token => SAFE_COMMANDS.includes(token));
 
@@ -43,7 +49,7 @@ async function runSmoke(repoPath, demoContent, options = {}) {
 }
 
 function resolveCommand(repoPath, raw) {
-  const [executable, ...args] = raw.trim().split(/\s+/);
+  const [executable, ...args] = parseCommandLine(raw);
 
   if (executable === 'node') {
     return { file: process.execPath, args };
@@ -65,6 +71,49 @@ function resolveCommand(repoPath, raw) {
   }
 
   throw new Error(`Command is not a direct node invocation or a declared package bin: ${executable}`);
+}
+
+function parseCommandLine(raw) {
+  const tokens = [];
+  let token = '';
+  let quote = null;
+  let started = false;
+
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw[i];
+    if (quote) {
+      if (char === quote) {
+        quote = null;
+      } else if (char === '\\' && quote === '"') {
+        if (i + 1 >= raw.length) throw new Error('trailing escape in command');
+        token += raw[++i];
+      } else {
+        token += char;
+      }
+      started = true;
+    } else if (char === "'" || char === '"') {
+      quote = char;
+      started = true;
+    } else if (/\s/.test(char)) {
+      if (started) {
+        tokens.push(token);
+        token = '';
+        started = false;
+      }
+    } else if (char === '\\') {
+      if (i + 1 >= raw.length) throw new Error('trailing escape in command');
+      token += raw[++i];
+      started = true;
+    } else {
+      token += char;
+      started = true;
+    }
+  }
+
+  if (quote) throw new Error('unterminated quote in command');
+  if (started) tokens.push(token);
+  if (tokens.length === 0) throw new Error('empty command');
+  return tokens;
 }
 
 function extractBashCommands(demoContent) {

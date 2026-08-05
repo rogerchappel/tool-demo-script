@@ -66,6 +66,26 @@ describe('generator', () => {
     assert.ok(report.failed === 0);
   });
 
+  it('quotes a bin entry containing spaces and generates a runnable command', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-spaced-bin-'));
+    fs.mkdirSync(path.join(tmpDir, 'bin'));
+    fs.writeFileSync(path.join(tmpDir, 'package.json'), JSON.stringify({
+      name: 'spaced-bin-fixture',
+      version: '1.2.3',
+      bin: { 'spaced-bin': 'bin/my cli.js' },
+    }));
+    fs.writeFileSync(path.join(tmpDir, 'bin', 'my cli.js'),
+      "if (process.argv.includes('--version')) console.log('1.2.3');\n");
+
+    const demo = generateDemoScript(tmpDir, detectEntryPoint(tmpDir));
+    const report = await runSmoke(tmpDir, demo);
+
+    assert.match(demo, /node 'bin\/my cli\.js' --version/);
+    assert.strictEqual(report.failed, 0, JSON.stringify(report.details));
+    assert.ok(report.details.some((detail) =>
+      detail.command === "node 'bin/my cli.js' --version" && detail.status === 'passed'));
+  });
+
   it('preserves Markdown examples without treating prose as commands', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-markdown-'));
     const examplesDir = path.join(tmpDir, 'examples');
@@ -280,5 +300,31 @@ describe('smoke verification', async () => {
     assert.strictEqual(report.skipped, 2);
     assert.strictEqual(report.passed, 0);
     assert.ok(report.details.every((detail) => detail.status === 'skipped'));
+  });
+
+  it('preserves quoted and escaped arguments when invoking node', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-quoted-args-'));
+    fs.writeFileSync(path.join(tmpDir, 'cli with spaces.js'), [
+      "const expected = ['two words', 'quoted path', '--help'];",
+      "if (JSON.stringify(process.argv.slice(2)) !== JSON.stringify(expected)) process.exit(1);",
+    ].join('\n'));
+    const demo = [
+      '```bash',
+      'node "cli with spaces.js" "two words" quoted\\ path --help',
+      '```',
+    ].join('\n');
+
+    const report = await runSmoke(tmpDir, demo);
+
+    assert.strictEqual(report.failed, 0, JSON.stringify(report.details));
+    assert.strictEqual(report.passed, 1);
+  });
+
+  it('skips malformed quoting without executing a partial command', async () => {
+    const report = await runSmoke(FIXTURE_PATH, "```bash\nnode 'index.js --help\n```\n");
+
+    assert.strictEqual(report.passed, 0);
+    assert.strictEqual(report.skipped, 1);
+    assert.match(report.details[0].reason, /unterminated quote/);
   });
 });
