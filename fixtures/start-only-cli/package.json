@@ -1,0 +1,8 @@
+{
+  "name": "start-only-cli",
+  "version": "2.3.4",
+  "description": "A CLI exposed only through its start script",
+  "scripts": {
+    "start": "node src/cli.js"
+  }
+}
