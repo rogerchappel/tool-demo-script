@@ -36,7 +36,10 @@ bash demo/promo-review-packet.sh
 
 ## What It Does
 
-- Detects the CLI entrypoint and available commands from `package.json` and scripts
+- Detects the CLI entrypoint and available commands from `package.json`,
+  including `bin`, `main`, and simple `node <file>` start scripts. Start-script
+  entries are used only when the referenced file exists; wrapper commands and
+  Node option flags are not inferred as runnable entries.
 - Generates a structured demo script in Markdown with install, version, and usage sections
 - Extracts examples from `examples/`, `demo/`, `demos/`, and `samples/`
   directories. Markdown examples are incorporated as Markdown so their prose and

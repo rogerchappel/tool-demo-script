@@ -10,6 +10,7 @@ const { runSmoke } = require('../src/smoke');
 const { generate, verify } = require('../src/index');
 
 const FIXTURE_PATH = path.join(__dirname, '..', 'fixtures', 'fixture-cli');
+const START_ONLY_FIXTURE_PATH = path.join(__dirname, '..', 'fixtures', 'start-only-cli');
 const CLI_PATH = path.join(__dirname, '..', 'bin', 'tool-demo-script.js');
 const README_PATH = path.join(__dirname, '..', 'README.md');
 
@@ -35,6 +36,16 @@ describe('detector', () => {
     const entry = detectEntryPoint('/tmp/does-not-exist-xyz');
     assert.strictEqual(entry.hasPackageJson, false);
     assert.strictEqual(entry.name, 'unknown');
+  });
+
+  it('uses a Node start script as the entry point when bin and main are absent', () => {
+    const entry = detectEntryPoint(START_ONLY_FIXTURE_PATH);
+
+    assert.strictEqual(entry.binEntry, null);
+    assert.strictEqual(entry.entryPoint, 'src/cli.js');
+    assert.deepStrictEqual(entry.commands, [
+      { name: 'start-only-cli', entry: 'src/cli.js' },
+    ]);
   });
 });
 
@@ -142,6 +153,35 @@ describe('end-to-end generate', () => {
 
     const demo = fs.readFileSync(outFile, 'utf8');
     assert.match(demo, /# Demo: fixture-cli/);
+  });
+
+  it('generates and verifies Markdown for a start-only CLI', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-start-only-'));
+    const outFile = path.join(tmpDir, 'demo.md');
+
+    execFileSync(process.execPath, [
+      CLI_PATH,
+      'demo',
+      '--repo',
+      START_ONLY_FIXTURE_PATH,
+      '--out',
+      outFile,
+    ], { encoding: 'utf8' });
+
+    const demo = fs.readFileSync(outFile, 'utf8');
+    assert.match(demo, /node src\/cli\.js --version/);
+    assert.doesNotMatch(demo, /node index\.js/);
+
+    const result = spawnSync(process.execPath, [
+      CLI_PATH,
+      'verify',
+      outFile,
+      '--repo',
+      START_ONLY_FIXTURE_PATH,
+    ], { encoding: 'utf8' });
+
+    assert.strictEqual(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Verified: 1 passed, 0 failed, 1 skipped/);
   });
 
   it('executes the documented Quickstart demo command against the fixture', () => {
