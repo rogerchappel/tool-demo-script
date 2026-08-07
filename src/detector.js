@@ -53,11 +53,12 @@ function detectEntryPoint(repoPath) {
         result.entryPoint = pkg.main;
       }
 
-      // Extract commands from start script
-      if (result.startCommand && result.startCommand.includes(' ')) {
-        const parts = result.startCommand.split(' ');
+      // Extract a directly runnable entry from a simple Node start script.
+      const startEntry = inferNodeStartEntry(repoPath, result.startCommand);
+      if (!result.binEntry && !result.entryPoint && startEntry) {
+        result.entryPoint = startEntry;
         if (!result.commands.some(c => c.name === result.name)) {
-          result.commands.push({ name: result.name, entry: parts[0] });
+          result.commands.push({ name: result.name, entry: startEntry });
         }
       }
     } catch (err) {
@@ -99,6 +100,17 @@ function detectEntryPoint(repoPath) {
   });
 
   return result;
+}
+
+function inferNodeStartEntry(repoPath, startCommand) {
+  if (typeof startCommand !== 'string') return null;
+
+  const match = startCommand.match(/^\s*node\s+(?:"([^"]+)"|'([^']+)'|(\S+))(?:\s|$)/);
+  const candidate = match && (match[1] || match[2] || match[3]);
+  if (!candidate || candidate.startsWith('-') || /[;&|`$<>]/.test(candidate)) return null;
+
+  const candidatePath = path.resolve(repoPath, candidate);
+  return fs.existsSync(candidatePath) && fs.statSync(candidatePath).isFile() ? candidate : null;
 }
 
 function findReadme(dir) {

@@ -181,7 +181,7 @@ describe('end-to-end generate', () => {
     ], { encoding: 'utf8' });
 
     assert.strictEqual(result.status, 0, result.stderr);
-    assert.match(result.stdout, /Verified: 1 passed, 0 failed, 2 skipped/);
+    assert.match(result.stdout, /Verified: 1 passed, 0 failed, 1 skipped/);
   });
 
   it('executes the documented Quickstart demo command against the fixture', () => {

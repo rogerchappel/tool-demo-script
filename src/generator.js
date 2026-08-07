@@ -21,12 +21,12 @@ function generateDemoScript(repoPath, entry, _options = {}) {
   lines.push('```');
   lines.push('');
 
-  if (entry.commands.length > 0) {
+  const versionEntry = entry.binEntry || entry.entryPoint || entry.commands[0]?.entry;
+  if (versionEntry) {
     lines.push('## 2. Check version');
     lines.push('');
     lines.push('```bash');
-    const firstBin = entry.binEntry || entry.entryPoint || 'index.js';
-    lines.push(`node ${quoteShellArgument(firstBin)} --version`);
+    lines.push(`node ${quoteShellArgument(versionEntry)} --version`);
     lines.push('# => ' + entry.version);
     lines.push('```');
     lines.push('');
