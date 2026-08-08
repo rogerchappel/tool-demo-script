@@ -1,0 +1,7 @@
+{
+  "name": "definitely-unpublished-fixture",
+  "version": "9.8.7",
+  "bin": {
+    "silent-version": "index.js"
+  }
+}
