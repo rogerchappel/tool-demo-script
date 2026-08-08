@@ -40,14 +40,18 @@ bash demo/promo-review-packet.sh
   including `bin`, `main`, and simple `node <file>` start scripts. Start-script
   entries are used only when the referenced file exists; wrapper commands and
   Node option flags are not inferred as runnable entries.
-- Generates a structured demo script in Markdown with install, version, and usage sections
+- Generates a structured demo script in Markdown with local-source install,
+  version, and usage sections. The install command is `npm install .`; a
+  package name alone is not treated as evidence that the package is published.
 - Extracts examples from `examples/`, `demo/`, `demos/`, and `samples/`
   directories. Markdown examples are incorporated as Markdown so their prose and
   existing shell fences remain intact; `.sh` examples are wrapped in a shell
   fence.
 - Produces narration metadata (title, sections, duration, key commands)
 - Generates a confidence report scoring package health (README, LICENSE, CI, tests, examples)
-- Verifies demo commands still execute correctly via smoke testing
+- Verifies demo commands still execute correctly via smoke testing. An expected
+  output comment such as `# => 1.2.3` is part of the verification contract: the
+  command fails verification when that exact output line is absent or different.
 
 Verification recognizes `bash` fenced code blocks in Markdown files that use
 either LF (Unix) or CRLF (Windows) line endings.
@@ -161,6 +165,10 @@ npm pack --dry-run
 - Quoted paths and arguments, plus backslash-escaped spaces, are preserved when
   commands are verified without invoking a shell
 - npm install commands are excluded from verification
+- Generated install commands use the target repository (`npm install .`) and do
+  not claim that its package name is available from the npm registry
+- Expected-output comments (`# => value`) are checked against command output;
+  a zero exit status alone cannot certify a version claim
 - Safe command allowlist: `--version`, `-V`, `--help`, `-h`, `version`, `help`, `info`, `list`, `ls`
 
 See [SECURITY.md](SECURITY.md) before verifying demos from untrusted
