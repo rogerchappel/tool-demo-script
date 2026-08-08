@@ -16,12 +16,16 @@ Use this skill when:
 ## What It Does
 
 1. Detects CLI entrypoint, binary commands, and package scripts via `detectEntryPoint()`
-2. Generates a structured demo Markdown with install, usage, test, and example sections
+2. Generates a structured demo Markdown with a local-source `npm install .`
+   instruction plus version, usage, test, and example sections. It does not infer
+   npm registry publication from the presence of `package.json`.
    (`.md` examples retain their Markdown and fenced commands; `.sh` examples are
    placed in a shell fence)
 3. Produces narration metadata (title, sections count, estimated duration, key commands)
 4. Generates a confidence report scoring 6 dimensions: package.json, README, LICENSE, CI, examples, tests
-5. Optional `verify` runs safe commands with a 5s timeout and reports pass/fail/skip
+5. Optional `verify` runs safe commands with a 5s timeout and reports
+   pass/fail/skip. A following `# => expected output` comment must match an exact
+   output line; empty or mismatched output fails even when the command exits 0.
 
 ## Side-Effect Boundaries
 

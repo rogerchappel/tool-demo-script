@@ -11,6 +11,7 @@ const { generate, verify } = require('../src/index');
 
 const FIXTURE_PATH = path.join(__dirname, '..', 'fixtures', 'fixture-cli');
 const START_ONLY_FIXTURE_PATH = path.join(__dirname, '..', 'fixtures', 'start-only-cli');
+const SILENT_VERSION_FIXTURE_PATH = path.join(__dirname, '..', 'fixtures', 'silent-version-cli');
 const CLI_PATH = path.join(__dirname, '..', 'bin', 'tool-demo-script.js');
 const README_PATH = path.join(__dirname, '..', 'README.md');
 
@@ -125,6 +126,13 @@ describe('generator', () => {
     assert.ok(report.details.some((detail) =>
       detail.command === 'fixture-cli --help' && detail.status === 'passed'));
     assert.ok(!report.details.some((detail) => detail.command === 'Run this:'));
+  });
+
+  it('uses a local install path and does not imply registry publication', () => {
+    const demo = generateDemoScript(SILENT_VERSION_FIXTURE_PATH, detectEntryPoint(SILENT_VERSION_FIXTURE_PATH));
+
+    assert.match(demo, /npm install \./);
+    assert.doesNotMatch(demo, /npm install definitely-unpublished-fixture/);
   });
 });
 
@@ -269,6 +277,40 @@ describe('CLI argument parsing', () => {
 });
 
 describe('smoke verification', async () => {
+  it('fails a generated version claim when the CLI prints no version', async () => {
+    const demo = generateDemoScript(SILENT_VERSION_FIXTURE_PATH, detectEntryPoint(SILENT_VERSION_FIXTURE_PATH));
+    const report = await runSmoke(SILENT_VERSION_FIXTURE_PATH, demo);
+
+    assert.strictEqual(report.passed, 0, JSON.stringify(report.details));
+    assert.strictEqual(report.failed, 1);
+    assert.strictEqual(report.details[0].expectedOutput, '9.8.7');
+    assert.match(report.details[0].error, /expected output absent/);
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-silent-version-'));
+    const demoPath = path.join(tmpDir, 'demo.md');
+    fs.writeFileSync(demoPath, demo);
+    const result = spawnSync(process.execPath, [
+      CLI_PATH,
+      'verify',
+      demoPath,
+      '--repo',
+      SILENT_VERSION_FIXTURE_PATH,
+    ], { encoding: 'utf8' });
+
+    assert.strictEqual(result.status, 1);
+    assert.match(result.stdout, /Verified: 0 passed, 1 failed/);
+    assert.doesNotMatch(result.stdout, /Verified: 1 passed/);
+  });
+
+  it('fails a version claim when the CLI prints a different version', async () => {
+    const demo = ['```bash', 'node index.js --version', '# => 9.8.7', '```'].join('\n');
+    const report = await runSmoke(FIXTURE_PATH, demo);
+
+    assert.strictEqual(report.passed, 0, JSON.stringify(report.details));
+    assert.strictEqual(report.failed, 1);
+    assert.match(report.details[0].error, /expected output not observed/);
+  });
+
   it('runs direct node entries and declared package bins', async () => {
     const demo = [
       '```bash',

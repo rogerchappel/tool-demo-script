@@ -16,7 +16,7 @@ function generateDemoScript(repoPath, entry, _options = {}) {
   lines.push('');
   lines.push('```bash');
   if (entry.hasPackageJson) {
-    lines.push(`npm install ${entry.name}`);
+    lines.push('npm install .');
   }
   lines.push('```');
   lines.push('');

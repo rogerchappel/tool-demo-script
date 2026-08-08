@@ -12,7 +12,8 @@ async function runSmoke(repoPath, demoContent, options = {}) {
   const results = { passed: 0, failed: 0, skipped: 0, details: [] };
   const commands = extractBashCommands(demoContent);
 
-  for (const raw of commands) {
+  for (const commandSpec of commands) {
+    const { command: raw, expectedOutput } = commandSpec;
     let tokens;
     try {
       tokens = parseCommandLine(raw);
@@ -37,8 +38,22 @@ async function runSmoke(repoPath, demoContent, options = {}) {
         encoding: 'utf8',
         timeout: 5000,
       });
+      const actualOutput = output.trim();
+      if (expectedOutput !== undefined && !actualOutput.split(/\r?\n/).includes(expectedOutput)) {
+        results.failed++;
+        results.details.push({
+          command: raw,
+          status: 'failed',
+          expectedOutput,
+          output: actualOutput.slice(0, 200),
+          error: actualOutput
+            ? `expected output not observed: ${expectedOutput}`
+            : `expected output absent: ${expectedOutput}`,
+        });
+        continue;
+      }
       results.passed++;
-      results.details.push({ command: raw, status: 'passed', output: output.trim().slice(0, 200) });
+      results.details.push({ command: raw, status: 'passed', output: actualOutput.slice(0, 200) });
     } catch (err) {
       results.failed++;
       results.details.push({ command: raw, status: 'failed', error: err.message.slice(0, 200) });
@@ -121,10 +136,13 @@ function extractBashCommands(demoContent) {
   const regex = /```bash\r?\n([\s\S]*?)```/g;
   let match;
   while ((match = regex.exec(demoContent)) !== null) {
-    const lines = match[1].split(/\r?\n/)
-      .map(l => l.trim())
-      .filter(l => l && !l.startsWith('#') && !l.startsWith('npm install'));
-    commands.push(...lines);
+    const lines = match[1].split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    for (let index = 0; index < lines.length; index++) {
+      const command = lines[index];
+      if (command.startsWith('#') || command.startsWith('npm install')) continue;
+      const expectedMatch = lines[index + 1]?.match(/^#\s*=>\s*(.*)$/);
+      commands.push({ command, ...(expectedMatch ? { expectedOutput: expectedMatch[1] } : {}) });
+    }
   }
   return commands;
 }
