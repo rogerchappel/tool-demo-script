@@ -9,7 +9,7 @@ Create runnable demo scripts and narration from a CLI repo, then verify the comm
 git clone https://github.com/rogerchappel/tool-demo-script.git
 npm install -g ./tool-demo-script
 
-# Generate a demo script for a CLI repo
+# Generate a demo script for a CLI repo; missing output directories are created
 tool-demo-script demo --repo ./my-cli --out demo.md
 
 # Verify demo commands still work
@@ -68,7 +68,7 @@ Actions:
 
 demo options:
   --repo <path>      Path to the CLI repo
-  --out <file>       Write demo script to file (default: stdout)
+  --out <file>       Write demo script, creating parent directories (default: stdout)
   --narration        Also print narration metadata
 
 verify options:

@@ -27,7 +27,7 @@ Actions:
 
 demo options:
   --repo <path>      Path to the CLI repo
-  --out <file>       Write demo script to file
+  --out <file>       Write demo script, creating parent directories
   --narration        Also print narration metadata
 
 verify options:
@@ -62,6 +62,7 @@ Examples:
     const result = generate(repoPath);
 
     if (outFile) {
+      fs.mkdirSync(path.dirname(path.resolve(outFile)), { recursive: true });
       fs.writeFileSync(outFile, result.scriptMarkdown, 'utf8');
       console.error(`Demo script → ${outFile}`);
     } else {

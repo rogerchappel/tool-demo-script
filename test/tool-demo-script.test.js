@@ -163,6 +163,23 @@ describe('end-to-end generate', () => {
     assert.match(demo, /# Demo: fixture-cli/);
   });
 
+  it('creates missing parent directories for CLI demo output', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-nested-out-'));
+    const outFile = path.join(tmpDir, 'nested', 'reports', 'demo.md');
+
+    const result = spawnSync(process.execPath, [
+      CLI_PATH,
+      'demo',
+      '--repo',
+      FIXTURE_PATH,
+      '--out',
+      outFile,
+    ], { encoding: 'utf8' });
+
+    assert.strictEqual(result.status, 0, result.stderr);
+    assert.match(fs.readFileSync(outFile, 'utf8'), /# Demo: fixture-cli/);
+  });
+
   it('generates and verifies Markdown for a start-only CLI', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-start-only-'));
     const outFile = path.join(tmpDir, 'demo.md');
