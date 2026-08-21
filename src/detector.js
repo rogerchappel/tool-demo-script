@@ -20,6 +20,8 @@ function detectEntryPoint(repoPath) {
     hasReadme: false,
     hasExamples: false,
     hasCI: false,
+    exampleEvidence: { files: [], detail: 'no example directories found' },
+    ciEvidence: { files: [], detail: 'no supported CI locations found' },
   };
 
   // Check package.json
@@ -86,20 +88,57 @@ function detectEntryPoint(repoPath) {
 
   // Check examples
   const exampleDirs = ['examples', 'example', 'demo', 'demos', 'samples'];
-  result.hasExamples = exampleDirs.some(d => {
-    const p = path.join(repoPath, d);
-    return fs.existsSync(p) && fs.statSync(p).isDirectory();
-  });
+  const presentExampleDirs = exampleDirs.filter(d => isDirectory(path.join(repoPath, d)));
+  const exampleFiles = presentExampleDirs.flatMap(d =>
+    substantiveFiles(path.join(repoPath, d), file => /\.(?:md|sh)$/i.test(file))
+      .map(file => path.join(d, file)));
+  result.hasExamples = exampleFiles.length > 0;
+  result.exampleEvidence = {
+    files: exampleFiles,
+    detail: result.hasExamples
+      ? `usable artifacts: ${exampleFiles.join(', ')}`
+      : presentExampleDirs.length
+        ? 'example directories found, but no usable .md or .sh artifacts detected'
+        : 'no example directories found',
+  };
 
   // Check CI
-  const ciIndicators = ['.github/workflows', '.gitlab-ci.yml', '.circleci/config.yml', '.travis.yml'];
-  result.hasCI = ciIndicators.some(ind => {
-    const p = path.join(repoPath, ind);
-    if (ind.endsWith('/')) return fs.existsSync(p) && fs.statSync(p).isDirectory();
-    return fs.existsSync(p);
-  });
+  const workflowDir = path.join(repoPath, '.github', 'workflows');
+  const ciFiles = isDirectory(workflowDir)
+    ? substantiveFiles(workflowDir, file => /\.ya?ml$/i.test(file))
+      .map(file => path.join('.github', 'workflows', file))
+    : [];
+  const standaloneCI = ['.gitlab-ci.yml', '.circleci/config.yml', '.travis.yml'];
+  ciFiles.push(...standaloneCI.filter(file => isSubstantiveFile(path.join(repoPath, file))));
+  const hasCILocation = isDirectory(workflowDir)
+    || standaloneCI.some(file => fs.existsSync(path.join(repoPath, file)));
+  result.hasCI = ciFiles.length > 0;
+  result.ciEvidence = {
+    files: ciFiles,
+    detail: result.hasCI
+      ? `configuration files: ${ciFiles.join(', ')}`
+      : hasCILocation
+        ? 'CI locations found, but no substantive configuration files detected'
+        : 'no supported CI locations found',
+  };
 
   return result;
+}
+
+function isDirectory(candidate) {
+  return fs.existsSync(candidate) && fs.statSync(candidate).isDirectory();
+}
+
+function isSubstantiveFile(candidate) {
+  return fs.existsSync(candidate)
+    && fs.statSync(candidate).isFile()
+    && fs.readFileSync(candidate, 'utf8').trim().length > 0;
+}
+
+function substantiveFiles(directory, supportsFile) {
+  return fs.readdirSync(directory)
+    .filter(file => supportsFile(file) && isSubstantiveFile(path.join(directory, file)))
+    .sort();
 }
 
 function inferNodeStartEntry(repoPath, startCommand) {

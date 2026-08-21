@@ -51,7 +51,7 @@ function generateDemoScript(repoPath, entry, _options = {}) {
   }
 
   // Extract examples
-  const exampleDirs = ['examples', 'demo', 'demos', 'samples'];
+  const exampleDirs = ['examples', 'example', 'demo', 'demos', 'samples'];
   for (const dir of exampleDirs) {
     const exampleDir = path.join(repoPath, dir);
     if (fs.existsSync(exampleDir) && fs.statSync(exampleDir).isDirectory()) {
@@ -106,13 +106,13 @@ function generateConfidenceReport(repoPath, entry, demoScript) {
   else { failed++; checks.push({ item: 'README', status: 'fail', detail: 'missing' }); }
 
   if (entry.hasCI) { passed++; checks.push({ item: 'CI configuration', status: 'pass' }); }
-  else { failed++; checks.push({ item: 'CI configuration', status: 'fail', detail: 'none detected' }); }
+  else { failed++; checks.push({ item: 'CI configuration', status: 'fail', detail: entry.ciEvidence?.detail || 'none detected' }); }
 
   if (entry.hasLicense) { passed++; checks.push({ item: 'LICENSE file', status: 'pass' }); }
   else { failed++; checks.push({ item: 'LICENSE file', status: 'fail', detail: 'missing' }); }
 
   if (entry.hasExamples) { passed++; checks.push({ item: 'examples directory', status: 'pass' }); }
-  else { failed++; checks.push({ item: 'examples directory', status: 'fail', detail: 'none found' }); }
+  else { failed++; checks.push({ item: 'examples directory', status: 'fail', detail: entry.exampleEvidence?.detail || 'none found' }); }
 
   if (entry.testCommand) { passed++; checks.push({ item: 'test script', status: 'pass' }); }
   else { failed++; checks.push({ item: 'test script', status: 'fail', detail: 'no test in package.json' }); }
