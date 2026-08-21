@@ -43,12 +43,18 @@ bash demo/promo-review-packet.sh
 - Generates a structured demo script in Markdown with local-source install,
   version, and usage sections. The install command is `npm install .`; a
   package name alone is not treated as evidence that the package is published.
-- Extracts examples from `examples/`, `demo/`, `demos/`, and `samples/`
+- Extracts examples from `examples/`, `example/`, `demo/`, `demos/`, and `samples/`
   directories. Markdown examples are incorporated as Markdown so their prose and
   existing shell fences remain intact; `.sh` examples are wrapped in a shell
   fence.
 - Produces narration metadata (title, sections, duration, key commands)
-- Generates a confidence report scoring package health (README, LICENSE, CI, tests, examples)
+- Generates a confidence report scoring package health (README, LICENSE, CI,
+  tests, examples). CI passes only when a supported location contains a
+  non-empty configuration: `.github/workflows/*.yml`,
+  `.github/workflows/*.yaml`, `.gitlab-ci.yml`, `.circleci/config.yml`, or
+  `.travis.yml`. Examples pass only when a supported example directory contains
+  a non-empty top-level `.md` or `.sh` artifact. Empty indicator directories
+  remain failed checks and the report explains which evidence is missing.
 - Verifies demo commands still execute correctly via smoke testing. An expected
   output comment such as `# => 1.2.3` is part of the verification contract: the
   command fails verification when that exact output line is absent or different.
