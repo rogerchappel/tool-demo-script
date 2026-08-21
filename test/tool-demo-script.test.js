@@ -33,6 +33,47 @@ describe('detector', () => {
     assert.strictEqual(entry.hasCI, true);
   });
 
+  it('requires a usable example artifact instead of an empty indicator directory', () => {
+    for (const directory of ['examples', 'example', 'demo', 'demos', 'samples']) {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-examples-'));
+      fs.mkdirSync(path.join(tmpDir, directory));
+
+      const empty = detectEntryPoint(tmpDir);
+      assert.strictEqual(empty.hasExamples, false, directory);
+      assert.match(empty.exampleEvidence.detail, /no usable \.md or \.sh artifacts/);
+
+      fs.writeFileSync(path.join(tmpDir, directory, 'walkthrough.md'), '# Example\n');
+      const populated = detectEntryPoint(tmpDir);
+      assert.strictEqual(populated.hasExamples, true, directory);
+      assert.deepStrictEqual(populated.exampleEvidence.files, [`${directory}/walkthrough.md`]);
+    }
+  });
+
+  it('requires a substantive configuration file at each supported CI location', () => {
+    const locations = [
+      ['.github/workflows/ci.yml', '.github/workflows/ci.yml'],
+      ['.github/workflows/release.yaml', '.github/workflows/release.yaml'],
+      ['.gitlab-ci.yml', '.gitlab-ci.yml'],
+      ['.circleci/config.yml', '.circleci/config.yml'],
+      ['.travis.yml', '.travis.yml'],
+    ];
+
+    for (const [relativePath, expected] of locations) {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-ci-'));
+      fs.mkdirSync(path.dirname(path.join(tmpDir, relativePath)), { recursive: true });
+      fs.writeFileSync(path.join(tmpDir, relativePath), '   \n');
+
+      const empty = detectEntryPoint(tmpDir);
+      assert.strictEqual(empty.hasCI, false, relativePath);
+      assert.match(empty.ciEvidence.detail, /no substantive configuration files/);
+
+      fs.writeFileSync(path.join(tmpDir, relativePath), 'jobs:\n  test:\n');
+      const populated = detectEntryPoint(tmpDir);
+      assert.strictEqual(populated.hasCI, true, relativePath);
+      assert.deepStrictEqual(populated.ciEvidence.files, [expected]);
+    }
+  });
+
   it('handles non-existent path gracefully', () => {
     const entry = detectEntryPoint('/tmp/does-not-exist-xyz');
     assert.strictEqual(entry.hasPackageJson, false);
@@ -76,6 +117,27 @@ describe('generator', () => {
     assert.ok(report.score >= 80, `Expected score >= 80, got ${report.score}`);
     assert.ok(report.passed >= 5);
     assert.ok(report.failed === 0);
+  });
+
+  it('reports empty CI and example directories as failed checks with evidence details', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-confidence-'));
+    fs.mkdirSync(path.join(tmpDir, '.github', 'workflows'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, 'examples'));
+    const entry = detectEntryPoint(tmpDir);
+    const report = generateConfidenceReport(tmpDir, entry, '');
+
+    const ci = report.checks.find((check) => check.item === 'CI configuration');
+    const examples = report.checks.find((check) => check.item === 'examples directory');
+    assert.deepStrictEqual(ci, {
+      item: 'CI configuration',
+      status: 'fail',
+      detail: 'CI locations found, but no substantive configuration files detected',
+    });
+    assert.deepStrictEqual(examples, {
+      item: 'examples directory',
+      status: 'fail',
+      detail: 'example directories found, but no usable .md or .sh artifacts detected',
+    });
   });
 
   it('quotes a bin entry containing spaces and generates a runnable command', async () => {
