@@ -7,8 +7,13 @@ Thanks for improving `tool-demo-script`.
 Run the release gate before opening a pull request:
 
 ```bash
+npm ci
 npm run release:check
 ```
+
+CI runs this clean-install release check on Node.js 18, the minimum version
+declared by the package, and Node.js 24. Run it on both versions locally when
+changing runtime-sensitive behavior or package metadata.
 
 For smaller loops while developing:
 
