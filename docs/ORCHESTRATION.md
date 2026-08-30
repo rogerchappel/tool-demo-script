@@ -14,7 +14,9 @@ bin/tool-demo-script.js    ← CLI entrypoint
 
 1. CLI parses action: demo or verify
 2. `detectEntryPoint()` reads package.json, finds bin/scripts, checks repo state
-3. `generateDemoScript()` produces Markdown with sections for install, version, usage
+3. `generateDemoScript()` produces Markdown with install and usage sections; it
+   adds an exact-output version step only after a bounded `--version` probe
+   returns the package version
 4. `generateNarration()` extracts metadata for video/talk planning
 5. `generateConfidenceReport()` scores 6 dimensions
 6. `verify()` optionally runs safe commands with 5s timeout
