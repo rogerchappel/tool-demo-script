@@ -3,6 +3,34 @@
  */
 const path = require('path');
 const fs = require('fs');
+const { spawnSync } = require('child_process');
+
+function selectVersionStep(repoPath, entry) {
+  const versionEntry = entry.binEntry || entry.entryPoint || entry.commands[0]?.entry;
+  if (!versionEntry || !entry.version) return null;
+
+  const absoluteEntry = path.resolve(repoPath, versionEntry);
+  const relativeEntry = path.relative(repoPath, absoluteEntry);
+  if (relativeEntry.startsWith('..') || path.isAbsolute(relativeEntry) || !fs.existsSync(absoluteEntry)) {
+    return null;
+  }
+
+  const probe = spawnSync(process.execPath, [absoluteEntry, '--version'], {
+    cwd: repoPath,
+    encoding: 'utf8',
+    timeout: 2000,
+    maxBuffer: 64 * 1024,
+  });
+  const outputLines = `${probe.stdout || ''}${probe.stderr || ''}`
+    .split(/\r?\n/)
+    .map((line) => line.trim());
+  if (probe.error || probe.status !== 0 || !outputLines.includes(entry.version)) return null;
+
+  return {
+    command: `node ${quoteShellArgument(versionEntry)} --version`,
+    expectedOutput: entry.version,
+  };
+}
 
 function generateDemoScript(repoPath, entry, _options = {}) {
   const lines = [];
@@ -21,13 +49,13 @@ function generateDemoScript(repoPath, entry, _options = {}) {
   lines.push('```');
   lines.push('');
 
-  const versionEntry = entry.binEntry || entry.entryPoint || entry.commands[0]?.entry;
-  if (versionEntry) {
+  const versionStep = selectVersionStep(repoPath, entry);
+  if (versionStep) {
     lines.push('## 2. Check version');
     lines.push('');
     lines.push('```bash');
-    lines.push(`node ${quoteShellArgument(versionEntry)} --version`);
-    lines.push('# => ' + entry.version);
+    lines.push(versionStep.command);
+    lines.push('# => ' + versionStep.expectedOutput);
     lines.push('```');
     lines.push('');
   }
