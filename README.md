@@ -40,9 +40,11 @@ bash demo/promo-review-packet.sh
   including `bin`, `main`, and simple `node <file>` start scripts. Start-script
   entries are used only when the referenced file exists; wrapper commands and
   Node option flags are not inferred as runnable entries.
-- Generates a structured demo script in Markdown with local-source install,
-  version, and usage sections. The install command is `npm install .`; a
-  package name alone is not treated as evidence that the package is published.
+- Generates a structured demo script in Markdown with local-source install and
+  usage sections. A version section with exact expected output is included only
+  when a bounded `--version` probe succeeds and prints the package version;
+  silent or unsupported CLIs omit it. The install command is `npm install .`;
+  a package name alone is not treated as evidence that the package is published.
 - Extracts examples from `examples/`, `example/`, `demo/`, `demos/`, and `samples/`
   directories. Markdown examples are incorporated as Markdown so their prose and
   existing shell fences remain intact; `.sh` examples are wrapped in a shell
