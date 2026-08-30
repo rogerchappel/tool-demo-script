@@ -180,8 +180,8 @@ describe('generator', () => {
     const report = await runSmoke(FIXTURE_PATH, demo);
 
     assert.match(demo, /## Demo: guide\n\n### Guided example/);
-    assert.strictEqual((demo.match(/^```bash$/gm) || []).length, 5);
-    assert.strictEqual((demo.match(/^```$/gm) || []).length, 5);
+    assert.strictEqual((demo.match(/^```bash$/gm) || []).length, 4);
+    assert.strictEqual((demo.match(/^```$/gm) || []).length, 4);
     assert.ok(narration.keyCommands.includes('fixture-cli --help'));
     assert.ok(!narration.keyCommands.includes('Run this:'));
     assert.strictEqual(report.failed, 0, JSON.stringify(report.details));
@@ -356,14 +356,14 @@ describe('CLI argument parsing', () => {
 });
 
 describe('smoke verification', async () => {
-  it('fails a generated version claim when the CLI prints no version', async () => {
+  it('omits a generated version claim when the CLI prints no version', async () => {
     const demo = generateDemoScript(SILENT_VERSION_FIXTURE_PATH, detectEntryPoint(SILENT_VERSION_FIXTURE_PATH));
     const report = await runSmoke(SILENT_VERSION_FIXTURE_PATH, demo);
 
     assert.strictEqual(report.passed, 0, JSON.stringify(report.details));
-    assert.strictEqual(report.failed, 1);
-    assert.strictEqual(report.details[0].expectedOutput, '9.8.7');
-    assert.match(report.details[0].error, /expected output absent/);
+    assert.strictEqual(report.failed, 0);
+    assert.doesNotMatch(demo, /## 2\. Check version/);
+    assert.doesNotMatch(demo, /# => 9\.8\.7/);
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-silent-version-'));
     const demoPath = path.join(tmpDir, 'demo.md');
@@ -376,9 +376,19 @@ describe('smoke verification', async () => {
       SILENT_VERSION_FIXTURE_PATH,
     ], { encoding: 'utf8' });
 
-    assert.strictEqual(result.status, 1);
-    assert.match(result.stdout, /Verified: 0 passed, 1 failed/);
-    assert.doesNotMatch(result.stdout, /Verified: 1 passed/);
+    assert.strictEqual(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Verified: 0 passed, 0 failed/);
+  });
+
+  it('keeps an exact generated version claim when the bounded probe succeeds', async () => {
+    const demo = generateDemoScript(FIXTURE_PATH, detectEntryPoint(FIXTURE_PATH));
+    const report = await runSmoke(FIXTURE_PATH, demo);
+
+    assert.match(demo, /node \.\/index\.js --version\n# => 0\.1\.0/);
+    assert.ok(report.details.some((detail) =>
+      detail.command === 'node ./index.js --version'
+      && detail.output === '0.1.0'
+      && detail.status === 'passed'));
   });
 
   it('fails a version claim when the CLI prints a different version', async () => {
