@@ -151,7 +151,7 @@ describe('generator', () => {
     fs.writeFileSync(path.join(tmpDir, 'bin', 'my cli.js'),
       "if (process.argv.includes('--version')) console.log('1.2.3');\n");
 
-    const demo = generateDemoScript(tmpDir, detectEntryPoint(tmpDir));
+    const demo = generateDemoScript(tmpDir, detectEntryPoint(tmpDir), { probeVersion: true });
     const report = await runSmoke(tmpDir, demo);
 
     assert.match(demo, /node 'bin\/my cli\.js' --version/);
@@ -195,6 +195,27 @@ describe('generator', () => {
 
     assert.match(demo, /npm install \./);
     assert.doesNotMatch(demo, /npm install definitely-unpublished-fixture/);
+  });
+
+  it('does not execute a target entrypoint during default generation', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-demo-script-no-probe-'));
+    const marker = path.join(tmpDir, 'version-probe-ran.txt');
+    fs.writeFileSync(path.join(tmpDir, 'package.json'), JSON.stringify({
+      name: 'side-effect-fixture',
+      version: '1.2.3',
+      bin: 'index.js',
+    }));
+    fs.writeFileSync(path.join(tmpDir, 'index.js'), [
+      "require('fs').writeFileSync('version-probe-ran.txt', 'ran');",
+      "if (process.argv.includes('--version')) console.log('1.2.3');",
+    ].join('\n'));
+
+    const output = path.join(tmpDir, 'demo.md');
+    execFileSync(process.execPath, [CLI_PATH, 'demo', '--repo', tmpDir, '--out', output]);
+    const demo = fs.readFileSync(output, 'utf8');
+
+    assert.strictEqual(fs.existsSync(marker), false);
+    assert.doesNotMatch(demo, /## 2\. Check version/);
   });
 });
 
@@ -251,6 +272,7 @@ describe('end-to-end generate', () => {
       'demo',
       '--repo',
       START_ONLY_FIXTURE_PATH,
+      '--probe-version',
       '--out',
       outFile,
     ], { encoding: 'utf8' });
@@ -357,7 +379,11 @@ describe('CLI argument parsing', () => {
 
 describe('smoke verification', async () => {
   it('omits a generated version claim when the CLI prints no version', async () => {
-    const demo = generateDemoScript(SILENT_VERSION_FIXTURE_PATH, detectEntryPoint(SILENT_VERSION_FIXTURE_PATH));
+    const demo = generateDemoScript(
+      SILENT_VERSION_FIXTURE_PATH,
+      detectEntryPoint(SILENT_VERSION_FIXTURE_PATH),
+      { probeVersion: true },
+    );
     const report = await runSmoke(SILENT_VERSION_FIXTURE_PATH, demo);
 
     assert.strictEqual(report.passed, 0, JSON.stringify(report.details));
@@ -381,7 +407,7 @@ describe('smoke verification', async () => {
   });
 
   it('keeps an exact generated version claim when the bounded probe succeeds', async () => {
-    const demo = generateDemoScript(FIXTURE_PATH, detectEntryPoint(FIXTURE_PATH));
+    const demo = generateDemoScript(FIXTURE_PATH, detectEntryPoint(FIXTURE_PATH), { probeVersion: true });
     const report = await runSmoke(FIXTURE_PATH, demo);
 
     assert.match(demo, /node \.\/index\.js --version\n# => 0\.1\.0/);
