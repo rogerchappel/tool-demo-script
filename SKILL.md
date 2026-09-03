@@ -17,7 +17,8 @@ Use this skill when:
 
 1. Detects CLI entrypoint, binary commands, and package scripts via `detectEntryPoint()`
 2. Generates a structured demo Markdown with a local-source `npm install .`
-   instruction plus version, usage, test, and example sections. It does not infer
+   instruction plus usage, test, and example sections. An evidence-backed version
+   section is optional via `--probe-version`. It does not infer
    npm registry publication from the presence of `package.json`.
    (`.md` examples retain their Markdown and fenced commands; `.sh` examples are
    placed in a shell fence)
@@ -29,7 +30,8 @@ Use this skill when:
 
 ## Side-Effect Boundaries
 
-- Detection is read-only on the target repo
+- Default detection and demo generation are read-only on the target repo
+- `demo --probe-version` executes the target entrypoint with `--version`
 - Verification **executes commands** in the repo directory — only runs safe commands by default
 - Verification resolves direct `node <entry>` commands and package-bin names from
   the target repo's `package.json`; it does not search globally installed commands
@@ -38,7 +40,8 @@ Use this skill when:
 
 ## Approval Requirements
 
-- `demo` action: no approval needed, purely generates Markdown
+- `demo` action without `--probe-version`: no approval needed, purely generates Markdown
+- `demo --probe-version`: require approval to execute reviewed/trusted target code
 - `verify` action with `--allow-unsafe`: require user approval before proceeding
 
 ## Examples

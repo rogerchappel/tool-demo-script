@@ -32,7 +32,7 @@ function selectVersionStep(repoPath, entry) {
   };
 }
 
-function generateDemoScript(repoPath, entry, _options = {}) {
+function generateDemoScript(repoPath, entry, options = {}) {
   const lines = [];
   lines.push(`# Demo: ${entry.name} v${entry.version}`);
   lines.push('');
@@ -49,7 +49,7 @@ function generateDemoScript(repoPath, entry, _options = {}) {
   lines.push('```');
   lines.push('');
 
-  const versionStep = selectVersionStep(repoPath, entry);
+  const versionStep = options.probeVersion ? selectVersionStep(repoPath, entry) : null;
   if (versionStep) {
     lines.push('## 2. Check version');
     lines.push('');

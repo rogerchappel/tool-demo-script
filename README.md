@@ -41,9 +41,12 @@ bash demo/promo-review-packet.sh
   entries are used only when the referenced file exists; wrapper commands and
   Node option flags are not inferred as runnable entries.
 - Generates a structured demo script in Markdown with local-source install and
-  usage sections. A version section with exact expected output is included only
-  when a bounded `--version` probe succeeds and prints the package version;
-  silent or unsupported CLIs omit it. The install command is `npm install .`;
+  usage sections. By default generation never executes target-repository code.
+  With the explicit `--probe-version` opt-in, a version section with exact
+  expected output is included only when a bounded `--version` probe succeeds and
+  prints the package version; silent or unsupported CLIs omit it. This opt-in
+  can run arbitrary target code and requires the same trust and approval as
+  verification. The install command is `npm install .`;
   a package name alone is not treated as evidence that the package is published.
 - Extracts examples from `examples/`, `example/`, `demo/`, `demos/`, and `samples/`
   directories. Markdown examples are incorporated as Markdown so their prose and
@@ -78,6 +81,7 @@ demo options:
   --repo <path>      Path to the CLI repo
   --out <file>       Write demo script, creating parent directories (default: stdout)
   --narration        Also print narration metadata
+  --probe-version    Execute the target CLI to verify a version step
 
 verify options:
   --repo <path>      Path to the CLI repo
@@ -166,7 +170,9 @@ npm pack --dry-run
 
 ## Safety Notes
 
-- Demo detection is read-only
+- Default demo generation is read-only and does not execute target entrypoints
+- `demo --probe-version` executes the target entrypoint with `--version`; use it
+  only after reviewing/trusting the repository and obtaining execution approval
 - Verification runs commands in the repo directory with a 5s timeout
 - Direct `node <entry>` commands and command names declared in the target
   package's `bin` field are resolved to their local entry files

@@ -29,6 +29,7 @@ demo options:
   --repo <path>      Path to the CLI repo
   --out <file>       Write demo script, creating parent directories
   --narration        Also print narration metadata
+  --probe-version    Execute the target CLI to verify a version step
 
 verify options:
   --repo <path>      Path to the CLI repo
@@ -46,12 +47,13 @@ Examples:
   if (action === 'demo') {
     const parsed = parseArgs(rest, {
       values: ['--repo', '--out'],
-      booleans: ['--narration'],
+      booleans: ['--narration', '--probe-version'],
       positionals: 0,
     });
     const repoPath = parsed.values['--repo'];
     const outFile = parsed.values['--out'];
     const showNarration = parsed.booleans.has('--narration');
+    const probeVersion = parsed.booleans.has('--probe-version');
 
     if (!repoPath) {
       console.error('Error: --repo is required');
@@ -59,7 +61,7 @@ Examples:
     }
     requireReadableDirectory(repoPath, 'repository');
 
-    const result = generate(repoPath);
+    const result = generate(repoPath, { probeVersion });
 
     if (outFile) {
       fs.mkdirSync(path.dirname(path.resolve(outFile)), { recursive: true });
