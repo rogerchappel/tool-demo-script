@@ -387,7 +387,8 @@ describe('smoke verification', async () => {
     const report = await runSmoke(SILENT_VERSION_FIXTURE_PATH, demo);
 
     assert.strictEqual(report.passed, 0, JSON.stringify(report.details));
-    assert.strictEqual(report.failed, 0);
+    assert.strictEqual(report.failed, 1);
+    assert.match(report.details.at(-1).error, /no commands were executed/i);
     assert.doesNotMatch(demo, /## 2\. Check version/);
     assert.doesNotMatch(demo, /# => 9\.8\.7/);
 
@@ -402,8 +403,9 @@ describe('smoke verification', async () => {
       SILENT_VERSION_FIXTURE_PATH,
     ], { encoding: 'utf8' });
 
-    assert.strictEqual(result.status, 0, result.stderr);
-    assert.match(result.stdout, /Verified: 0 passed, 0 failed/);
+    assert.strictEqual(result.status, 1, result.stderr);
+    assert.match(result.stdout, /Verified: 0 passed, 1 failed/);
+    assert.match(result.stdout, /no commands were executed/i);
   });
 
   it('keeps an exact generated version claim when the bounded probe succeeds', async () => {
@@ -496,7 +498,13 @@ describe('smoke verification', async () => {
 
     assert.strictEqual(report.skipped, 2);
     assert.strictEqual(report.passed, 0);
-    assert.ok(report.details.every((detail) => detail.status === 'skipped'));
+    assert.strictEqual(report.failed, 1);
+    assert.ok(report.details.slice(0, 2).every((detail) => detail.status === 'skipped'));
+    assert.deepStrictEqual(report.details.at(-1), {
+      command: '(verification)',
+      status: 'failed',
+      error: 'no commands were executed',
+    });
   });
 
   it('preserves quoted and escaped arguments when invoking node', async () => {
@@ -523,5 +531,7 @@ describe('smoke verification', async () => {
     assert.strictEqual(report.passed, 0);
     assert.strictEqual(report.skipped, 1);
     assert.match(report.details[0].reason, /unterminated quote/);
+    assert.strictEqual(report.failed, 1);
+    assert.match(report.details[1].error, /no commands were executed/i);
   });
 });
