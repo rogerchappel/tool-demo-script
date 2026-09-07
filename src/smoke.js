@@ -60,6 +60,15 @@ async function runSmoke(repoPath, demoContent, options = {}) {
     }
   }
 
+  if (results.passed === 0 && results.failed === 0) {
+    results.failed++;
+    results.details.push({
+      command: '(verification)',
+      status: 'failed',
+      error: 'no commands were executed',
+    });
+  }
+
   return results;
 }
 
