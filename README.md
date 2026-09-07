@@ -126,7 +126,9 @@ npm run release:check
 `package:smoke` runs `npm pack --dry-run` and confirms the package includes the
 CLI, source modules, fixture CLI, release docs, and README. `release:check`
 combines syntax checks, tests, fixture demo generation, and package smoke for
-the same verification path locally and in CI.
+the same verification path locally and in CI. Its fixture verification probes
+the version command and must report at least one passed command; a report where
+every command was skipped is a failed verification, not a successful no-op.
 
 The npm package ships the CLI, source modules, fixture CLI, release docs,
 README, MIT license, security policy, contribution guide, and changelog. The
