@@ -73,6 +73,10 @@ const report = await verify('demo.md', './my-cli');
 console.log(report.passed + ' / ' + (report.passed + report.failed));
 ```
 
+Verification fails when no command can be executed. A demo containing only
+skipped commands returns `failed: 1` with a `no commands were executed` detail,
+so callers cannot treat a no-op report as successful verification.
+
 ## Verification / Safety Workflow
 
 1. Run `demo` to generate the script
